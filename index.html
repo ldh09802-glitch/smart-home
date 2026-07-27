@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>yellow의 스마트홈 대시보드</title>
+  <title>hyeon의 스마트 일출 알람 대시보드</title>
   
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,29 +14,32 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
   
   <style>
-    /* Design Tokens & Theme Setup from DESIGN.md */
+    /* Design Tokens: Sky Blue Morning Theme */
     :root {
-      --bg-gradient: linear-gradient(135deg, #ffdcc3 0%, #fef9f1 50%, #cee5ff 100%);
-      --dashboard-bg: #fef9f1;
-      --primary-color: #d97706; /* Sunset Amber active highlight */
-      --primary-hover: #b15f00;
-      --primary-light: #ffdcc3;
-      --accent-color: #ffc329;
-      --text-color: #1d1c17;
-      --text-sub: #554336;
-      --text-light: #887364;
+      --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #bae6fd 100%);
+      --dashboard-bg: #f0f9ff;
+      --primary-color: #0284c7; /* Sky Blue */
+      --primary-hover: #0369a1;
+      --primary-light: #e0f2fe;
+      --accent-color: #f59e0b; /* Golden Sunrise Orange */
+      --accent-hover: #d97706;
+      --text-color: #0f172a; /* Navy Slate */
+      --text-sub: #334155;
+      --text-light: #64748b;
       
-      /* Neumorphic Shadows from DESIGN.md */
-      --shadow-dark: #e5dfd3;
+      /* Neumorphic Shadows (Sky Blue Base) */
+      --shadow-dark: #cbdfe1;
       --shadow-light: #ffffff;
+      --shadow-raised: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+      --shadow-sunken: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
       
-      /* Glassmorphism from DESIGN.md */
-      --glass-bg: rgba(253, 248, 240, 0.7);
+      /* Glassmorphism */
+      --glass-bg: rgba(240, 249, 255, 0.7);
       
-      --status-green: #16a34a;
-      --status-red: #dc2626;
-      --terminal-bg: #1e1b18;
-      --terminal-text: #f9bd22;
+      --status-green: #0d9488;
+      --status-red: #e11d48;
+      --terminal-bg: #0f172a;
+      --terminal-text: #38bdf8;
       
       --font-main: "Plus Jakarta Sans", -apple-system, sans-serif;
       --font-mono: "JetBrains Mono", monospace;
@@ -59,7 +62,7 @@
       align-items: center;
     }
 
-    /* Container styled like a mobile application */
+    /* Container styled like a premium mobile device */
     .app-container {
       width: 100%;
       max-width: 480px;
@@ -69,7 +72,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 20px 40px rgba(75, 53, 29, 0.15);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
     }
 
     @media (min-width: 481px) {
@@ -77,7 +80,7 @@
         height: 85vh;
         border-radius: 32px;
         border: 4px solid var(--shadow-light);
-        box-shadow: 20px 20px 60px #ded9d2, -20px -20px 60px #ffffff;
+        box-shadow: 20px 20px 60px #c4d7e6, -20px -20px 60px #ffffff;
       }
     }
 
@@ -127,13 +130,13 @@
     .status-badge.connected {
       background: var(--status-green);
       color: #ffffff;
-      box-shadow: 3px 3px 6px rgba(22, 163, 74, 0.3);
+      box-shadow: 3px 3px 6px rgba(13, 148, 136, 0.3);
     }
 
     .status-badge.scanning {
       background: var(--primary-color);
       color: #ffffff;
-      box-shadow: 3px 3px 6px rgba(217, 119, 6, 0.3);
+      box-shadow: 3px 3px 6px rgba(2, 132, 199, 0.3);
       animation: pulse-bg 1.5s infinite alternate;
     }
 
@@ -190,7 +193,7 @@
     .section-title {
       font-size: 1.25rem;
       font-weight: 800;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
       color: var(--text-color);
       display: flex;
       align-items: center;
@@ -204,55 +207,369 @@
     /* Card Styling (Neumorphic) */
     .card {
       background: var(--dashboard-bg);
-      border-radius: 1rem; /* 16px from DESIGN.md */
+      border-radius: 1.25rem;
       padding: 1.25rem;
       margin-bottom: 1.25rem;
-      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: var(--shadow-raised);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       position: relative;
     }
 
-    /* Circular Sensor Monitors from DESIGN.md */
-    .circular-monitor {
-      position: relative;
-      width: 100px;
-      height: 100px;
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .card-title span {
+      font-size: 1.2rem;
+      color: var(--primary-color);
+    }
+
+    /* Sunrise Rings Visualizer */
+    .sunrise-visualizer {
+      height: 120px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 0.75rem;
+      position: relative;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
       background: var(--dashboard-bg);
+      box-shadow: var(--shadow-sunken);
+      overflow: hidden;
+    }
+
+    .neopixel-ring {
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
-      box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+      border: 6px dashed var(--shadow-dark);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.5s ease;
     }
 
-    .progress-ring {
-      transform: rotate(-90deg);
+    .neopixel-ring.active {
+      border-color: var(--accent-color);
+      animation: rotate-ring 12s linear infinite;
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+    }
+
+    @keyframes rotate-ring {
+      100% { transform: rotate(360deg); }
+    }
+
+    .sunrise-sun {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--shadow-dark);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .neopixel-ring.active .sunrise-sun {
+      background: radial-gradient(circle, #fcd34d 0%, #f59e0b 60%, #ef4444 100%);
+      box-shadow: 0 0 20px #f59e0b, 0 0 40px rgba(245, 158, 11, 0.3);
+      transform: scale(1.15);
+    }
+
+    /* Optimal Wake Card */
+    .wake-card {
+      background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    .wake-time-display {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary-color);
+      letter-spacing: -0.02em;
+      margin: 0.5rem 0;
+      text-align: center;
+    }
+
+    /* Buttons & Controls */
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.85rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      background: var(--dashboard-bg);
+      color: var(--text-color);
+      box-shadow: var(--shadow-raised);
+    }
+
+    .btn:active {
+      box-shadow: var(--shadow-sunken);
+      transform: scale(0.98);
+    }
+
+    .btn.primary {
+      background: var(--primary-color);
+      color: #ffffff;
+      box-shadow: 4px 4px 10px rgba(2, 132, 199, 0.25), -4px -4px 10px rgba(255, 255, 255, 0.8);
+    }
+
+    .btn.primary:active {
+      background: var(--primary-hover);
+      box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn.accent {
+      background: var(--accent-color);
+      color: #ffffff;
+      box-shadow: 4px 4px 10px rgba(245, 158, 11, 0.25), -4px -4px 10px rgba(255, 255, 255, 0.8);
+    }
+
+    .btn.accent:active {
+      background: var(--accent-hover);
+      box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn.danger {
+      color: var(--status-red);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      border: 1px solid var(--shadow-dark);
+    }
+
+    /* Time Input Custom */
+    .time-picker-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0.75rem 0 1rem;
+    }
+
+    .time-input {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-color);
+      background: var(--dashboard-bg);
+      border: none;
+      outline: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      box-shadow: var(--shadow-sunken);
+      text-align: center;
+      width: 160px;
+    }
+
+    /* Switch Custom */
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+
+    .toggle-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-sub);
+    }
+
+    .neuo-switch {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      border-radius: 9999px;
+      background: var(--dashboard-bg);
+      box-shadow: var(--shadow-sunken);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .neuo-switch-handle {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--text-light);
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    .progress-ring__background {
-      stroke: var(--shadow-dark);
-      opacity: 0.4;
+    .neuo-switch.active {
+      background: var(--primary-light);
     }
 
-    .progress-ring__circle {
-      transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-      stroke-linecap: round;
+    .neuo-switch.active .neuo-switch-handle {
+      left: 27px;
+      background: var(--primary-color);
     }
 
-    .circular-inner {
-      position: absolute;
+    /* Dual Display Simulator (Tab 2) */
+    .display-emulator {
+      background: #1e293b;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      color: #38bdf8;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+      border: 4px solid var(--shadow-dark);
+    }
+
+    .emulator-header {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .lcd-screen {
+      font-family: var(--font-mono);
+      background: #0284c7; /* Lit Sky Blue LCD */
+      color: #f0f9ff;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 1.1rem;
+      line-height: 1.4;
+      letter-spacing: 0.05em;
+      text-shadow: 0 0 4px rgba(255,255,255,0.4);
+      min-height: 64px;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .lcd-screen.off {
+      background: #0f172a;
+      color: #1e293b;
+      text-shadow: none;
+    }
+
+    .oled-screen {
+      font-family: var(--font-mono);
+      background: #000000;
+      color: #ffffff;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid #334155;
+    }
+
+    .oled-canvas-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      font-size: 0.8rem;
+    }
+
+    /* Virtual OLED Cat Display */
+    .cat-avatar {
+      font-size: 2.2rem;
+      animation: cat-bounce 1.5s infinite ease-in-out alternate;
+    }
+    
+    .cat-sleeping {
+      filter: grayscale(1) opacity(0.6);
+      animation: cat-sleep 3s infinite ease-in-out alternate;
+    }
+
+    @keyframes cat-bounce {
+      0% { transform: translateY(0) scaleY(1); }
+      100% { transform: translateY(-8px) scaleY(0.95); }
+    }
+    
+    @keyframes cat-sleep {
+      0% { transform: scale(0.95); }
+      100% { transform: scale(1.05); }
+    }
+
+    .oled-gauge-container {
+      width: 100%;
+      height: 8px;
+      background: #1e293b;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.25rem;
+    }
+
+    .oled-gauge-bar {
+      height: 100%;
+      width: 0%;
+      background: #38bdf8;
+      transition: width 0.1s linear;
+    }
+
+    /* Alarm Unlock Area */
+    .unlock-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 2;
+      padding: 0.5rem 0;
     }
 
-    /* Sensor Grid */
+    .btn-hold-unlock {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--dashboard-bg);
+      box-shadow: var(--shadow-raised);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: var(--text-color);
+      transition: all 0.2s;
+      border: 3px solid transparent;
+      position: relative;
+    }
+
+    .btn-hold-unlock:active {
+      box-shadow: var(--shadow-sunken);
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .hold-tip {
+      font-size: 0.75rem;
+      color: var(--text-light);
+      margin-top: 0.5rem;
+      font-weight: 500;
+    }
+
+    /* Sensor Panel (Tab 3) */
     .sensor-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -280,16 +597,55 @@
       justify-content: center;
       margin-bottom: 0.75rem;
       background: var(--dashboard-bg);
-      box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+      box-shadow: var(--shadow-sunken);
       color: var(--primary-color);
     }
 
     .sensor-icon-wrapper.humidity {
-      color: #0284c7;
+      color: #0ea5e9;
     }
 
     .sensor-icon-wrapper.light {
-      color: #ca8a04;
+      color: var(--accent-color);
+    }
+
+    .circular-monitor {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+      background: var(--dashboard-bg);
+      border-radius: 50%;
+      box-shadow: var(--shadow-sunken);
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .progress-ring__background {
+      stroke: var(--shadow-dark);
+      opacity: 0.3;
+    }
+
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      stroke-linecap: round;
+    }
+
+    .circular-inner {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
     }
 
     .sensor-label {
@@ -298,378 +654,165 @@
       color: var(--text-light);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: 0.25rem;
-    }
-
-    .sensor-value-container {
-      display: flex;
-      align-items: baseline;
-      gap: 0.15rem;
-      margin-bottom: 0.5rem;
     }
 
     .sensor-value {
-      font-family: var(--font-mono);
-      font-size: 1.8rem;
-      font-weight: 700;
+      font-size: 1.5rem;
+      font-weight: 800;
       color: var(--text-color);
+      margin-top: 0.15rem;
     }
 
     .sensor-unit {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-sub);
-    }
-
-    /* Dynamic Visual Dials/Bars */
-    .progress-bar-container {
-      width: 100%;
-      height: 8px;
-      background: var(--shadow-dark);
-      border-radius: 9999px;
-      overflow: hidden;
-      margin-top: 0.25rem;
-      box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.08);
-    }
-
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      border-radius: 9999px;
-      background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
-      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .progress-fill.humidity-fill {
-      background: linear-gradient(90deg, #38bdf8, #0284c7);
-    }
-
-    .progress-fill.light-fill {
-      background: linear-gradient(90deg, #fef08a, #ca8a04);
-    }
-
-    .sensor-status {
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--text-sub);
-      margin-top: 0.4rem;
-    }
-
-    /* Neumorphic Buttons */
-    .btn-neumorphic {
-      background: var(--dashboard-bg);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      color: var(--text-color);
-      padding: 0.8rem 1.2rem;
-      border-radius: 1rem; /* 16px from DESIGN.md */
-      font-size: 0.9rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      outline: none;
-      user-select: none;
-    }
-
-    .btn-neumorphic:hover {
-      transform: translateY(-1px);
-      color: var(--primary-color);
-    }
-
-    .btn-neumorphic:active, .btn-neumorphic.active {
-      transform: translateY(1px);
-      box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
-      color: var(--primary-color);
-    }
-
-    .btn-primary {
-      background: var(--primary-color);
-      color: #ffffff;
-      border: none;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-      color: #ffffff;
-    }
-
-    .btn-primary:active {
-      box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
-    }
-
-    .refresh-button-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 1rem;
-    }
-
-    .refresh-button-container button {
-      width: 100%;
-    }
-
-    /* Control Panel Cards */
-    .control-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.25rem;
-    }
-
-    .control-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .control-info h3 {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text-color);
-    }
-
-    .control-info p {
-      font-size: 0.75rem;
       color: var(--text-light);
     }
 
-    .control-btn-group {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .control-btn-group button {
-      padding: 0.5rem 0.9rem;
-      font-size: 0.8rem;
-      border-radius: 1rem; /* 16px from DESIGN.md */
-    }
-
-    /* Active States for Controls */
-    .control-btn-group button.active {
-      box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
-      color: var(--primary-color);
+    .bar-container {
+      width: 100%;
+      height: 10px;
       background: var(--dashboard-bg);
-      border-color: rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      box-shadow: var(--shadow-sunken);
+      overflow: hidden;
+      margin: 0.75rem 0;
     }
 
-    /* Terminal Log Section */
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Terminal Logs */
     .terminal-container {
+      background: var(--terminal-bg);
+      border-radius: 1rem;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--terminal-text);
       display: flex;
       flex-direction: column;
-      height: 300px;
-    }
-
-    .terminal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .terminal-header span {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--text-sub);
+      height: 180px;
     }
 
     .terminal-screen {
       flex: 1;
-      background: var(--terminal-bg);
-      border-radius: 16px;
-      padding: 1rem;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      line-height: 1.4;
-      color: var(--terminal-text);
       overflow-y: auto;
-      box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(75, 53, 29, 0.2);
-    }
-
-    .terminal-screen::-webkit-scrollbar {
-      width: 6px;
-    }
-    .terminal-screen::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.02);
-    }
-    .terminal-screen::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.12);
-      border-radius: 3px;
+      margin-bottom: 0.75rem;
     }
 
     .terminal-line {
       margin-bottom: 0.35rem;
-      word-break: break-all;
+      line-height: 1.4;
+      white-space: pre-wrap;
     }
 
-    .terminal-line.tx {
-      color: #a3e635; /* light green for TX */
-    }
+    .terminal-line.system { color: #64748b; }
+    .terminal-line.tx { color: #f43f5e; }
+    .terminal-line.rx { color: #10b981; }
 
-    .terminal-line.rx {
-      color: #38bdf8; /* light blue for RX */
-    }
-
-    .terminal-line.system {
-      color: #94a3b8; /* gray for system */
-    }
-
-    /* Initial Overlay */
-    .connect-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      z-index: 100;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-      transition: all 0.5s ease;
-    }
-
-    .connect-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(1.05);
-    }
-
-    .connect-card {
-      background: var(--dashboard-bg);
-      border-radius: 1.5rem; /* 24px from DESIGN.md */
-      padding: 2.25rem 1.75rem;
-      width: 100%;
-      text-align: center;
-      box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .connect-illustration {
-      font-size: 4rem;
-      color: var(--primary-color);
-      margin-bottom: 1.25rem;
-      animation: bounce 2s infinite alternate;
-    }
-
-    @keyframes bounce {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-8px); }
-    }
-
-    .connect-card h2 {
-      font-size: 1.35rem;
-      font-weight: 800;
-      margin-bottom: 0.5rem;
-      color: var(--text-color);
-    }
-
-    .connect-card p {
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      line-height: 1.5;
-      margin-bottom: 2rem;
-    }
-
-    .connect-card .btn-connect {
-      width: 100%;
-      padding: 1rem;
-      font-size: 1rem;
-      border-radius: 18px;
-    }
-
-    /* Floating Tab Bar */
-    .tab-bar-container {
-      position: absolute;
-      bottom: 1.25rem;
-      left: 1.25rem;
-      right: 1.25rem;
-      z-index: 10;
-    }
-
+    /* Navigation Tab Bar */
     .tab-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4.5rem;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255, 255, 255, 0.4);
       display: flex;
       justify-content: space-around;
       align-items: center;
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 1rem; /* 16px from DESIGN.md */
-      padding: 0.5rem;
-      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 0 1rem;
+      z-index: 10;
     }
 
     .tab-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      background: transparent;
-      border: none;
+      gap: 0.25rem;
       color: var(--text-light);
       cursor: pointer;
-      padding: 0.6rem 0.8rem;
-      width: 28%;
-      border-radius: 14px;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s;
+      flex: 1;
+      padding: 0.5rem 0;
     }
 
-    .tab-item.active {
-      color: var(--primary-color);
-      background: var(--dashboard-bg);
-      box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
-    }
-
-    .tab-item span.icon {
+    .tab-item span.material-symbols-outlined {
       font-size: 1.5rem;
-      margin-bottom: 0.2rem;
+      transition: transform 0.3s;
     }
 
-    .tab-item span.label {
+    .tab-item p {
       font-size: 0.7rem;
       font-weight: 700;
     }
 
-    /* Rotate animation for refresh icon */
-    .rotating {
-      animation: rotate 1s linear infinite;
+    .tab-item.active {
+      color: var(--primary-color);
     }
 
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    .tab-item.active span.material-symbols-outlined {
+      transform: translateY(-2px);
     }
 
-    /* Custom visual representations */
-    .snoopy-preview-container {
+    /* Modal Overlay (Connect) */
+    .connect-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(240, 249, 255, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      margin-top: 1rem;
-      padding: 1rem;
-      border-radius: 16px;
-      background: #ffffff;
-      box-shadow: inset 2px 2px 5px var(--shadow-dark);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.5s ease;
     }
 
-    .snoopy-preview-container.active {
-      background: #fefbeb;
+    .connect-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
 
-    .snoopy-status-text {
-      font-size: 0.7rem;
+    .connect-icon {
+      font-size: 4rem;
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+      animation: pulse-icon 2s infinite alternate;
+    }
+
+    @keyframes pulse-icon {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.08); opacity: 1; }
+    }
+
+    .connect-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+
+    .connect-description {
+      font-size: 0.9rem;
       color: var(--text-light);
-      font-weight: 600;
+      margin-bottom: 2rem;
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -677,32 +820,27 @@
 
   <div class="app-container">
     
-    <!-- Bluetooth Connection Overlay -->
+    <!-- Connect Overlay (BLE Init) -->
     <div id="connectOverlay" class="connect-overlay">
-      <div class="connect-card">
-        <div class="connect-illustration">
-          <span class="material-symbols-outlined" style="font-size: 80px;">home_iot_device</span>
-        </div>
-        <h2>yellow 스마트홈 연결</h2>
-        <p>
-          BLE 통신을 사용하여 스마트홈 기기(ESP_dd)와 연결합니다.<br>
-          블루투스가 활성화되어 있는지 확인해 주세요.
-        </p>
-        <button id="btnConnect" class="btn-neumorphic btn-primary btn-connect">
-          <span class="material-symbols-outlined">bluetooth</span>
-          스마트홈 장치 연결
-        </button>
-      </div>
+      <span class="material-symbols-outlined connect-icon">bluetooth_searching</span>
+      <h2 class="connect-title">스마트 일출 알람</h2>
+      <p class="connect-description">
+        아침을 상쾌하게 깨워주는 나만의 스마트 알람.<br>
+        대시보드를 시작하려면 BLE 기기에 연결해 주세요.
+      </p>
+      <button id="btnConnect" class="btn primary" style="width: 200px; font-size: 1rem; padding: 1rem;">
+        <span class="material-symbols-outlined">bluetooth</span> ESP_dd 연결하기
+      </button>
     </div>
 
     <!-- App Header -->
     <header>
       <div class="brand-container">
-        <h1>yellow의 스마트홈</h1>
-        <p>제작자: ryun</p>
+        <h1>스마트 일출 알람 ⏰</h1>
+        <p>by dahyeon</p>
       </div>
       <div id="statusBadge" class="status-badge disconnected">
-        <div id="statusBadgeDot" class="badge-dot"></div>
+        <span id="statusBadgeDot" class="badge-dot"></span>
         <span id="statusBadgeText">연결 대기중</span>
       </div>
     </header>
@@ -710,161 +848,226 @@
     <!-- Main Content Area -->
     <div class="content-area">
 
-      <!-- SECTION 1: HOME/DASHBOARD -->
-      <section id="panelDashboard" class="section-panel active">
+      <!-- PANEL 1: ALARM & SUNRISE -->
+      <section id="panelAlarm" class="section-panel active">
         <h2 class="section-title">
-          <span class="material-symbols-outlined">analytics</span>
-          실시간 센서 정보
+          <span class="material-symbols-outlined">alarm</span> 알람 및 일출 제어
         </h2>
         
+        <!-- Smart Wakeup Setup Card -->
+        <div class="card">
+          <div class="card-title">
+            <span class="material-symbols-outlined">schedule</span> 기상 알람 시간 예약
+          </div>
+          <div class="time-picker-wrapper">
+            <input type="time" id="alarmTime" class="time-input" value="07:00">
+          </div>
+          <button id="btnSetAlarm" class="btn primary" style="width: 100%;">
+            <span class="material-symbols-outlined">done</span> 알람 설정 및 동기화
+          </button>
+        </div>
+
+        <!-- Optimal Wakeup Recommendation (WAKE:0645) -->
+        <div class="card wake-card" id="optimalWakeCard">
+          <div class="card-title" style="color: var(--primary-color);">
+            <span class="material-symbols-outlined">insights</span> 최적의 램(REM) 수면 기상 추천
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-sub); line-height: 1.4;">
+            ESP32 하드웨어 센서 데이터를 바탕으로 계산된 수면 주기 맞춤 기상 시간입니다:
+          </p>
+          <div class="wake-time-display" id="wakeTimeDisplay">06:45</div>
+          <p style="font-size: 0.75rem; color: var(--text-light); text-align: center; font-weight: 600;">
+            ✨ 기상 전 30분 동안 일출 시뮬레이션이 자동으로 동작합니다.
+          </p>
+        </div>
+
+        <!-- Sunrise Simulation Control Card -->
+        <div class="card">
+          <div class="card-title">
+            <span class="material-symbols-outlined">wb_sunny</span> 일출 시뮬레이션
+          </div>
+          
+          <div class="sunrise-visualizer">
+            <div id="neopixelRing" class="neopixel-ring">
+              <div class="sunrise-sun"></div>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <span class="toggle-label">일출 조명 활성화</span>
+            <div id="switchSunrise" class="neuo-switch">
+              <div class="neuo-switch-handle"></div>
+            </div>
+          </div>
+          
+          <div class="btn-group">
+            <button id="btnSunriseStart" class="btn accent">
+              <span class="material-symbols-outlined">play_arrow</span> 시뮬 시작
+            </button>
+            <button id="btnSunriseStop" class="btn danger">
+              <span class="material-symbols-outlined">stop</span> 시뮬 종료
+            </button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- PANEL 2: DUAL DISPLAY SIMULATOR -->
+      <section id="panelDisplay" class="section-panel">
+        <h2 class="section-title">
+          <span class="material-symbols-outlined">screenshot_monitor</span> 듀얼 디스플레이 & 해제
+        </h2>
+
+        <!-- Virtual LCD Screen -->
+        <div class="card">
+          <div class="card-title">
+            <span class="material-symbols-outlined">info</span> 메인 정보판 (I2C LCD 16x2)
+          </div>
+          <div class="display-emulator">
+            <div class="emulator-header">
+              <span>LCD Emulation</span>
+              <span>16 x 2 Characters</span>
+            </div>
+            <div id="virtualLcd" class="lcd-screen">
+              07:00 AM<br>Good Morning!
+            </div>
+          </div>
+          <div class="btn-group">
+            <button id="btnLcdBacklightOn" class="btn">
+              <span class="material-symbols-outlined">light_mode</span> 백라이트 ON
+            </button>
+            <button id="btnLcdBacklightOff" class="btn">
+              <span class="material-symbols-outlined">dark_mode</span> 백라이트 OFF
+            </button>
+          </div>
+        </div>
+
+        <!-- Virtual OLED & Unlock Touch -->
+        <div class="card">
+          <div class="card-title">
+            <span class="material-symbols-outlined">pets</span> 감성 캐릭터 & 알람 해제 (OLED 128x64)
+          </div>
+          <div class="display-emulator">
+            <div class="emulator-header">
+              <span>OLED SSD1306</span>
+              <span>128 x 64 Pixels</span>
+            </div>
+            <div class="oled-screen">
+              <div class="oled-canvas-area" id="oledCanvas">
+                <span id="virtualCat" class="cat-avatar cat-sleeping">🐱💤</span>
+              </div>
+              <div>
+                <div style="font-size: 0.65rem; color: #94a3b8; display: flex; justify-content: space-between;">
+                  <span id="oledStatusText">Status: sleeping...</span>
+                  <span id="oledProgressPercent">0%</span>
+                </div>
+                <div class="oled-gauge-container">
+                  <div id="oledGaugeBar" class="oled-gauge-bar"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Unlock Action Area -->
+          <div class="unlock-container">
+            <div id="btnUnlockHold" class="btn-hold-unlock">
+              HOLD
+            </div>
+            <p class="hold-tip">⚠️ 3초간 꾹 누르면 부저 해제 및 무드등이 유지됩니다.</p>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- PANEL 3: SENSORS & LOGS -->
+      <section id="panelSensors" class="section-panel">
+        <h2 class="section-title">
+          <span class="material-symbols-outlined">insights</span> 실시간 센서 & 터미널
+        </h2>
+
+        <!-- Sensor Grid -->
         <div class="sensor-grid">
-          <!-- Temp Card -->
+          
+          <!-- Temperature Card -->
           <div class="card sensor-card">
+            <div class="sensor-icon-wrapper">
+              <span class="material-symbols-outlined">thermostat</span>
+            </div>
             <div class="circular-monitor">
               <svg class="progress-ring" width="100" height="100">
-                <circle class="progress-ring__background" stroke="var(--shadow-dark)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
+                <circle class="progress-ring__background" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
                 <circle id="ringTemp" class="progress-ring__circle" stroke="var(--primary-color)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
               </svg>
               <div class="circular-inner">
-                <span class="material-symbols-outlined" style="font-size: 1.25rem; color: var(--primary-color); margin-bottom: 0.1rem;">thermostat</span>
-                <div class="sensor-value-container" style="margin-bottom: 0;">
-                  <span id="valTemp" class="sensor-value" style="font-size: 1.35rem;">--</span>
-                  <span class="sensor-unit" style="font-size: 0.75rem;">°C</span>
+                <span class="sensor-label">온도</span>
+                <div>
+                  <span id="valTemp" class="sensor-value">--</span>
+                  <span class="sensor-unit">°C</span>
                 </div>
               </div>
             </div>
-            <div class="sensor-label">실내 온도</div>
           </div>
 
-          <!-- Humi Card -->
+          <!-- Humidity Card -->
           <div class="card sensor-card">
+            <div class="sensor-icon-wrapper humidity">
+              <span class="material-symbols-outlined">humidity_percentage</span>
+            </div>
             <div class="circular-monitor">
               <svg class="progress-ring" width="100" height="100">
-                <circle class="progress-ring__background" stroke="var(--shadow-dark)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
-                <circle id="ringHumi" class="progress-ring__circle" stroke="#0284c7" stroke-width="6" fill="transparent" r="42" cx="50" cy="50" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
+                <circle class="progress-ring__background" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
+                <circle id="ringHumi" class="progress-ring__circle" stroke="#0ea5e9" stroke-width="6" fill="transparent" r="42" cx="50" cy="50" stroke-dasharray="263.89" stroke-dashoffset="263.89"/>
               </svg>
               <div class="circular-inner">
-                <span class="material-symbols-outlined" style="font-size: 1.25rem; color: #0284c7; margin-bottom: 0.1rem;">humidity_percentage</span>
-                <div class="sensor-value-container" style="margin-bottom: 0;">
-                  <span id="valHumi" class="sensor-value" style="font-size: 1.35rem;">--</span>
-                  <span class="sensor-unit" style="font-size: 0.75rem;">%</span>
+                <span class="sensor-label">습도</span>
+                <div>
+                  <span id="valHumi" class="sensor-value">--</span>
+                  <span class="sensor-unit">%</span>
                 </div>
               </div>
             </div>
-            <div class="sensor-label">실내 습도</div>
           </div>
 
-          <!-- Lux Card (Full Width) -->
+          <!-- Light Sensor Card -->
           <div class="card sensor-card full-width">
-            <div class="sensor-icon-wrapper light">
-              <span class="material-symbols-outlined">wb_sunny</span>
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="sensor-icon-wrapper light" style="margin-bottom: 0;">
+                  <span class="material-symbols-outlined">wb_sunny</span>
+                </div>
+                <div style="text-align: left;">
+                  <span class="sensor-label">실내 조도</span>
+                  <p id="statusCds" style="font-size: 0.8rem; font-weight: 600; color: var(--text-light);">정보 대기중</p>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <span id="valCds" class="sensor-value">----</span>
+                <span class="sensor-unit"> ADC</span>
+              </div>
             </div>
-            <div class="sensor-label">조도 센서 (CDS)</div>
-            <div class="sensor-value-container">
-              <span id="valCds" class="sensor-value">----</span>
-              <span class="sensor-unit">/ 4095</span>
+            <div class="bar-container">
+              <div id="barCds" class="bar-fill"></div>
             </div>
-            <div class="progress-bar-container">
-              <div id="barCds" class="progress-fill light-fill" style="width: 0%;"></div>
-            </div>
-            <div id="statusCds" class="sensor-status">정보 대기중</div>
           </div>
         </div>
 
-        <div class="refresh-button-container">
-          <button id="btnRefresh" class="btn-neumorphic" disabled>
-            <span id="refreshIcon" class="material-symbols-outlined">refresh</span>
-            센서 데이터 갱신
+        <div class="btn-group" style="margin-bottom: 1.25rem;">
+          <button id="btnRefresh" class="btn primary" style="grid-column: span 2;">
+            <span class="material-symbols-outlined" id="refreshIcon">autorenew</span> 센서 수동 갱신
           </button>
         </div>
-      </section>
 
-      <!-- SECTION 2: CONTROL PANEL -->
-      <section id="panelControl" class="section-panel">
-        <h2 class="section-title">
-          <span class="material-symbols-outlined">tune</span>
-          장치 제어
-        </h2>
-
-        <!-- LCD Backlight Control -->
-        <div class="card">
-          <div class="control-row">
-            <div class="control-info">
-              <h3>I2C LCD 백라이트</h3>
-              <p>16x2 문자 LCD 화면의 백라이트 전원</p>
-            </div>
-            <div class="control-btn-group">
-              <button id="btnLcdOff" class="btn-neumorphic" disabled>Off</button>
-              <button id="btnLcdOn" class="btn-neumorphic" disabled>On</button>
-            </div>
+        <!-- Terminal Output -->
+        <div class="card" style="padding: 1rem;">
+          <div class="card-title" style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="display: flex; align-items: center; gap: 0.4rem;">
+              <span class="material-symbols-outlined">terminal</span> NUS 터미널 로그
+            </span>
+            <button id="btnClearLog" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.7rem; box-shadow: none; border: 1px solid var(--shadow-dark);">Clear</button>
           </div>
-        </div>
-
-        <!-- RGB LED Control -->
-        <div class="card">
-          <div class="control-row">
-            <div class="control-info">
-              <h3>RGB LED 실내등</h3>
-              <p>스마트홈 거실 전등 전체 점등/소등</p>
-            </div>
-            <div class="control-btn-group">
-              <button id="btnLedOff" class="btn-neumorphic" disabled>끄기</button>
-              <button id="btnLedOn" class="btn-neumorphic" disabled>켜기</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Buzzer melody Control -->
-        <div class="card">
-          <div class="control-info" style="margin-bottom: 0.75rem;">
-            <h3>피에조 부저 멜로디</h3>
-            <p>스마트 알림 부저 음원 선택 재생</p>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-            <button id="btnBuzzer1" class="btn-neumorphic" disabled>
-              <span class="material-symbols-outlined" style="font-size: 1.1rem;">music_note</span>
-              학교종이 땡땡땡
-            </button>
-            <button id="btnBuzzer2" class="btn-neumorphic" disabled>
-              <span class="material-symbols-outlined" style="font-size: 1.1rem;">music_note</span>
-              반짝반짝 작은별
-            </button>
-          </div>
-        </div>
-
-        <!-- OLED Display Control -->
-        <div class="card">
-          <div class="control-row" style="margin-bottom: 0.5rem;">
-            <div class="control-info">
-              <h3>I2C OLED 이미지 출력</h3>
-              <p>SSD1306 OLED 디스플레이 캐릭터 렌더링</p>
-            </div>
-            <button id="btnOledImg" class="btn-neumorphic btn-primary" disabled>
-              <span class="material-symbols-outlined">image</span>
-              스누피 출력
-            </button>
-          </div>
-          <div id="snoopyPreview" class="snoopy-preview-container">
-            <span class="material-symbols-outlined" style="font-size: 32px; color: var(--primary-color); margin-bottom: 0.25rem;">pets</span>
-            <span id="snoopyText" class="snoopy-status-text">OLED 상태: 대기 중</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION 3: COMMUNICATION LOG -->
-      <section id="panelLogs" class="section-panel">
-        <div class="terminal-header">
-          <h2 class="section-title" style="margin-bottom: 0;">
-            <span class="material-symbols-outlined">terminal</span>
-            통신 로그 터미널
-          </h2>
-          <button id="btnClearLog" class="btn-neumorphic" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 8px;">지우기</button>
-        </div>
-        
-        <div class="card" style="padding: 0.5rem;">
           <div class="terminal-container">
             <div id="terminalScreen" class="terminal-screen">
-              <div class="terminal-line system">[시스템] 장치 연결을 기다리는 중...</div>
+              <div class="terminal-line system">[시스템] BLE NUS 연결 대기 중...</div>
             </div>
           </div>
         </div>
@@ -872,28 +1075,26 @@
 
     </div>
 
-    <!-- Floating Bottom Navigation Tab Bar -->
-    <div class="tab-bar-container">
-      <nav class="tab-bar">
-        <button class="tab-item active" data-target="panelDashboard">
-          <span class="material-symbols-outlined icon">analytics</span>
-          <span class="label">대시보드</span>
-        </button>
-        <button class="tab-item" data-target="panelControl">
-          <span class="material-symbols-outlined icon">tune</span>
-          <span class="label">장치제어</span>
-        </button>
-        <button class="tab-item" data-target="panelLogs">
-          <span class="material-symbols-outlined icon">terminal</span>
-          <span class="label">로그기록</span>
-        </button>
-      </nav>
-    </div>
+    <!-- Navigation Tab Bar -->
+    <nav class="tab-bar">
+      <div class="tab-item active" data-target="panelAlarm">
+        <span class="material-symbols-outlined">alarm</span>
+        <p>알람/일출</p>
+      </div>
+      <div class="tab-item" data-target="panelDisplay">
+        <span class="material-symbols-outlined">screenshot_monitor</span>
+        <p>디스플레이</p>
+      </div>
+      <div class="tab-item" data-target="panelSensors">
+        <span class="material-symbols-outlined">insights</span>
+        <p>센서/로그</p>
+      </div>
+    </nav>
 
   </div>
 
   <script>
-    // Configuration
+    // BLE NUS UUIDs (standard Nordic UART Service)
     const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
     const NUS_RX_UUID      = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
     const NUS_TX_UUID      = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
@@ -903,6 +1104,11 @@
     let rxCharacteristic = null;
     let txCharacteristic = null;
     let receivedBuffer = '';
+    
+    // Virtual State
+    let sunriseActive = false;
+    let holdTimer = null;
+    let holdProgress = 0;
 
     // DOM Elements
     const connectOverlay  = document.getElementById('connectOverlay');
@@ -910,9 +1116,27 @@
     const statusBadge     = document.getElementById('statusBadge');
     const statusBadgeDot  = document.getElementById('statusBadgeDot');
     const statusBadgeText = document.getElementById('statusBadgeText');
-    const btnRefresh      = document.getElementById('btnRefresh');
-    const refreshIcon     = document.getElementById('refreshIcon');
     
+    // Alarm & Sunrise DOM
+    const alarmTime       = document.getElementById('alarmTime');
+    const btnSetAlarm     = document.getElementById('btnSetAlarm');
+    const optimalWakeCard = document.getElementById('optimalWakeCard');
+    const wakeTimeDisplay = document.getElementById('wakeTimeDisplay');
+    const neopixelRing    = document.getElementById('neopixelRing');
+    const switchSunrise   = document.getElementById('switchSunrise');
+    const btnSunriseStart = document.getElementById('btnSunriseStart');
+    const btnSunriseStop  = document.getElementById('btnSunriseStop');
+    
+    // Display Emulator DOM
+    const virtualLcd      = document.getElementById('virtualLcd');
+    const btnLcdBacklightOn  = document.getElementById('btnLcdBacklightOn');
+    const btnLcdBacklightOff = document.getElementById('btnLcdBacklightOff');
+    const virtualCat      = document.getElementById('virtualCat');
+    const oledStatusText  = document.getElementById('oledStatusText');
+    const oledGaugeBar    = document.getElementById('oledGaugeBar');
+    const oledProgressPercent = document.getElementById('oledProgressPercent');
+    const btnUnlockHold   = document.getElementById('btnUnlockHold');
+
     // Sensors DOM
     const valTemp         = document.getElementById('valTemp');
     const valHumi         = document.getElementById('valHumi');
@@ -921,17 +1145,8 @@
     const ringHumi        = document.getElementById('ringHumi');
     const barCds          = document.getElementById('barCds');
     const statusCds       = document.getElementById('statusCds');
-
-    // Controls DOM
-    const btnLcdOn        = document.getElementById('btnLcdOn');
-    const btnLcdOff       = document.getElementById('btnLcdOff');
-    const btnLedOn        = document.getElementById('btnLedOn');
-    const btnLedOff       = document.getElementById('btnLedOff');
-    const btnBuzzer1      = document.getElementById('btnBuzzer1');
-    const btnBuzzer2      = document.getElementById('btnBuzzer2');
-    const btnOledImg      = document.getElementById('btnOledImg');
-    const snoopyPreview   = document.getElementById('snoopyPreview');
-    const snoopyText      = document.getElementById('snoopyText');
+    const btnRefresh      = document.getElementById('btnRefresh');
+    const refreshIcon     = document.getElementById('refreshIcon');
 
     // Logs DOM
     const terminalScreen  = document.getElementById('terminalScreen');
@@ -978,6 +1193,7 @@
       try {
         bluetoothDevice = await navigator.bluetooth.requestDevice({
           filters: [
+            { name: 'ESP_dd' },
             { namePrefix: 'ESP_' }
           ],
           optionalServices: [NUS_SERVICE_UUID]
@@ -1001,7 +1217,7 @@
         await txCharacteristic.startNotifications();
         txCharacteristic.addEventListener('characteristicvaluechanged', handleNotifications);
 
-        logToTerminal('스마트홈 장치와 완벽히 동기화되었습니다.', 'system');
+        logToTerminal('스마트 알람 기기와 완벽히 동기화되었습니다.', 'system');
         updateStatus('connected', '연결 완료');
         
         // Hide overlay and enable dashboard controls
@@ -1041,8 +1257,8 @@
 
     function setControlsEnabled(enabled) {
       const controls = [
-        btnRefresh, btnLcdOn, btnLcdOff, btnLedOn, btnLedOff,
-        btnBuzzer1, btnBuzzer2, btnOledImg
+        btnRefresh, btnLcdBacklightOn, btnLcdBacklightOff, btnSetAlarm,
+        btnSunriseStart, btnSunriseStop, btnUnlockHold
       ];
       controls.forEach(ctrl => {
         if (enabled) {
@@ -1060,7 +1276,7 @@
         const encoder = new TextEncoder();
         const data = encoder.encode(charCommand);
         
-        // 웹 블루투스 writeValue 메소드 호환성 처리 (오래된 브라우저/iOS Bluefy/최신 크롬 대응)
+        // Web Bluetooth writeValue support for multiple platforms (Chrome, Bluefy iOS)
         if (typeof rxCharacteristic.writeValueWithoutResponse === 'function') {
           await rxCharacteristic.writeValueWithoutResponse(data);
         } else if (typeof rxCharacteristic.writeValueWithResponse === 'function') {
@@ -1069,7 +1285,7 @@
           await rxCharacteristic.writeValue(data);
         }
         
-        logToTerminal(`[TX] 명령 전송: '${charCommand}'`, 'tx');
+        logToTerminal(`[TX] 명령 전송: '${charCommand.replace('\n', '\\n')}'`, 'tx');
       } catch (error) {
         logToTerminal(`[TX] 명령 전송 에러: ${error.message}`, 'system');
       }
@@ -1099,51 +1315,89 @@
     function setCircularProgress(ringElement, percentage) {
       if (!ringElement) return;
       const radius = 42;
-      const circumference = 2 * Math.PI * radius; // ~263.89
+      const circumference = 2 * Math.PI * radius;
       const offset = circumference - (percentage / 100) * circumference;
       ringElement.style.strokeDashoffset = offset;
     }
 
     function parseReceivedLine(line) {
-      // 1. Temp Parsing
+      // 1. Temperature Parsing (temp : 25)
       if (line.includes('temp')) {
         const tempVal = parseFloat(line.split(':')[1].trim());
         if (!isNaN(tempVal)) {
           valTemp.textContent = tempVal;
-          // Temperature percentage for circular monitor (assuming 0-50 range)
           const percentage = Math.min(Math.max((tempVal / 50) * 100, 0), 100);
           setCircularProgress(ringTemp, percentage);
+          updateLcdDisplay();
         }
       }
       
-      // 2. Humi Parsing
+      // 2. Humidity Parsing (humi : 60)
       else if (line.includes('humi')) {
         const humiVal = parseFloat(line.split(':')[1].trim());
         if (!isNaN(humiVal)) {
           valHumi.textContent = humiVal;
           setCircularProgress(ringHumi, humiVal);
+          updateLcdDisplay();
         }
       }
       
-      // 3. CDS Lux Parsing (Check if it is a pure integer)
+      // 3. REM Sleep Optimal Wake-up Parsing (wake : 0645)
+      else if (line.includes('wake')) {
+        const timeVal = line.split(':')[1].trim();
+        if (timeVal.length === 4) {
+          const hh = timeVal.substring(0, 2);
+          const mm = timeVal.substring(2, 4);
+          const formattedTime = `${hh}:${mm}`;
+          
+          wakeTimeDisplay.textContent = formattedTime;
+          optimalWakeCard.style.animation = 'pulse-bg 1s alternate 4';
+          logToTerminal(`[수면분석] 추천 기상 시간이 설정되었습니다: ${formattedTime}`, 'system');
+        }
+      }
+      
+      // 4. OLED PBM Image Status (OLED : Image Loaded)
+      else if (line.includes('OLED')) {
+        if (line.includes('Image Loaded')) {
+          virtualCat.textContent = '🐱✨';
+          virtualCat.className = 'cat-avatar';
+          oledStatusText.textContent = 'Status: kitty.pbm loaded!';
+          logToTerminal('가상 OLED: kitty.pbm 이미지 렌더링에 성공했습니다.', 'system');
+        } else if (line.includes('File Not Found')) {
+          virtualCat.textContent = '🐱❓';
+          oledStatusText.textContent = 'Status: kitty image error';
+        }
+      }
+      
+      // 5. CDS Lux Parsing (Pure integer)
       else if (/^\d+$/.test(line)) {
         const cdsVal = parseInt(line, 10);
         if (!isNaN(cdsVal)) {
           valCds.textContent = cdsVal;
-          // Illumination percentage for progress bar (0-4095 range)
           const percentage = Math.min(Math.max((cdsVal / 4095) * 100, 0), 100);
           barCds.style.width = `${percentage}%`;
           
-          // Custom Brightness Status
-          if (cdsVal > 4000) {
-            statusCds.textContent = '어두움 (창문 닫힘)';
+          if (cdsVal > 3000) {
+            statusCds.textContent = '아주 어두움 (취면 모드)';
+            statusCds.style.color = 'var(--text-light)';
+          } else if (cdsVal > 1500) {
+            statusCds.textContent = '보통 조도 (실내등)';
             statusCds.style.color = 'var(--text-sub)';
           } else {
-            statusCds.textContent = '밝음 (창문 열림)';
-            statusCds.style.color = 'var(--success-color)';
+            statusCds.textContent = '매우 밝음 (일출/아침)';
+            statusCds.style.color = 'var(--accent-color)';
           }
         }
       }
+    }
+
+    function updateLcdDisplay() {
+      const tempText = valTemp.textContent !== '--' ? `${valTemp.textContent}C` : '--C';
+      const humiText = valHumi.textContent !== '--' ? `${valHumi.textContent}%` : '--%';
+      
+      const hhmm = alarmTime.value;
+      
+      virtualLcd.innerHTML = `ALARM RESERVED: ${hhmm}<br>TEMP:${tempText} HUMI:${humiText}`;
     }
 
     function resetSensorUI() {
@@ -1155,8 +1409,12 @@
       barCds.style.width = '0%';
       statusCds.textContent = '정보 대기중';
       statusCds.style.color = 'var(--text-sub)';
-      snoopyPreview.classList.remove('active');
-      snoopyText.textContent = 'OLED 상태: 대기 중';
+      
+      virtualCat.textContent = '🐱💤';
+      virtualCat.className = 'cat-avatar cat-sleeping';
+      oledStatusText.textContent = 'Status: sleeping...';
+      oledGaugeBar.style.width = '0%';
+      oledProgressPercent.textContent = '0%';
     }
 
     async function requestSensorUpdate() {
@@ -1174,52 +1432,154 @@
       }, 800);
     }
 
-    // --- EVENT LISTENERS ---
+    // --- INTERACTIVE ACTIONS & EVENTS ---
+    
+    // BLE Connect Click
     btnConnect.addEventListener('click', connectBLE);
     
+    // Sensor Manual Refresh
     btnRefresh.addEventListener('click', requestSensorUpdate);
 
-    // LCD Control
-    btnLcdOn.addEventListener('click', async () => {
+    // Alarm Reservation Click
+    btnSetAlarm.addEventListener('click', async () => {
+      const timeVal = alarmTime.value.replace(':', ''); // '07:00' -> '0700'
+      const sendStr = `time : ${timeVal}\n`;
+      await sendCommand(sendStr);
+      updateLcdDisplay();
+      logToTerminal(`알람 예약이 전송되었습니다: ${alarmTime.value}`, 'system');
+      alert(`⏰ 기상 알람이 ${alarmTime.value}으로 동기화되었습니다!`);
+    });
+
+    // Sunrise Controls
+    btnSunriseStart.addEventListener('click', async () => {
+      sunriseActive = true;
+      neopixelRing.classList.add('active');
+      switchSunrise.classList.add('active');
+      
+      // Sequence: Turn NeonPixel On ('7') -> Load OLED Image ('9') -> Play wake up melody ('5')
+      logToTerminal('일출 시뮬레이션을 가동합니다. (조명 켜기 -> 부저 가동 -> OLED 갱신)', 'system');
+      await sendCommand('7'); // RGB LED On
+      
+      setTimeout(async () => {
+        await sendCommand('9'); // OLED load kitty image
+        virtualCat.textContent = '🐱👀';
+        virtualCat.className = 'cat-avatar';
+        oledStatusText.textContent = 'Status: Sunrise alert!';
+      }, 1000);
+
+      setTimeout(async () => {
+        await sendCommand('5'); // Piezo buzzer alert melody
+      }, 2500);
+    });
+
+    btnSunriseStop.addEventListener('click', async () => {
+      sunriseActive = false;
+      neopixelRing.classList.remove('active');
+      switchSunrise.classList.remove('active');
+      
+      logToTerminal('일출 시뮬레이션을 중지합니다.', 'system');
+      await sendCommand('8'); // RGB LED Off
+      
+      virtualCat.textContent = '🐱💤';
+      virtualCat.className = 'cat-avatar cat-sleeping';
+      oledStatusText.textContent = 'Status: sleeping...';
+      oledGaugeBar.style.width = '0%';
+      oledProgressPercent.textContent = '0%';
+    });
+
+    // Custom Switch Toggle
+    switchSunrise.addEventListener('click', () => {
+      if (switchSunrise.classList.contains('active')) {
+        btnSunriseStop.click();
+      } else {
+        btnSunriseStart.click();
+      }
+    });
+
+    // LCD Backlight Control
+    btnLcdBacklightOn.addEventListener('click', async () => {
       await sendCommand('3');
-      btnLcdOn.classList.add('active');
-      btnLcdOff.classList.remove('active');
+      virtualLcd.classList.remove('off');
+      btnLcdBacklightOn.classList.add('active');
+      btnLcdBacklightOff.classList.remove('active');
     });
 
-    btnLcdOff.addEventListener('click', async () => {
+    btnLcdBacklightOff.addEventListener('click', async () => {
       await sendCommand('4');
-      btnLcdOff.classList.add('active');
-      btnLcdOn.classList.remove('active');
+      virtualLcd.classList.add('off');
+      btnLcdBacklightOff.classList.add('active');
+      btnLcdBacklightOn.classList.remove('active');
     });
 
-    // LED Control
-    btnLedOn.addEventListener('click', async () => {
-      await sendCommand('7');
-      btnLedOn.classList.add('active');
-      btnLedOff.classList.remove('active');
-    });
+    // --- 3-SECOND UNLOCK MOUSE/TOUCH INTERACTION ---
+    function startHold() {
+      if (holdTimer) clearInterval(holdTimer);
+      holdProgress = 0;
+      virtualCat.textContent = '🐱❓';
+      oledStatusText.textContent = 'Status: waking up...';
+      
+      holdTimer = setInterval(async () => {
+        holdProgress += 3.33; // ~30 steps for 3 seconds
+        if (holdProgress >= 100) {
+          holdProgress = 100;
+          clearInterval(holdTimer);
+          holdTimer = null;
+          
+          // Successful Unlock Sequence
+          virtualCat.textContent = '🐱🎉';
+          virtualCat.className = 'cat-avatar';
+          oledStatusText.textContent = 'Status: Unlocked!';
+          logToTerminal('기상 알람이 정지되었습니다. (터치 4번 센서 길게 누름 에뮬레이션 완료)', 'system');
+          
+          // Web side stop
+          neopixelRing.classList.remove('active');
+          switchSunrise.classList.remove('active');
+          sunriseActive = false;
+          
+          // BLE commands to stop alarm
+          await sendCommand('8'); // Light OFF
+          await sendCommand('6'); // Play success tune or stop buzzer (if custom logic is supported)
+          
+          alert('☀️ 기상 완료! 기분 좋은 하루 되세요!');
+        }
+        
+        oledGaugeBar.style.width = `${holdProgress}%`;
+        oledProgressPercent.textContent = `${Math.round(holdProgress)}%`;
+      }, 100);
+    }
 
-    btnLedOff.addEventListener('click', async () => {
-      await sendCommand('8');
-      btnLedOff.classList.add('active');
-      btnLedOn.classList.remove('active');
-    });
+    function cancelHold() {
+      if (holdTimer) {
+        clearInterval(holdTimer);
+        holdTimer = null;
+      }
+      
+      if (holdProgress < 100) {
+        holdProgress = 0;
+        oledGaugeBar.style.width = '0%';
+        oledProgressPercent.textContent = '0%';
+        if (sunriseActive) {
+          virtualCat.textContent = '🐱👀';
+          oledStatusText.textContent = 'Status: Sunrise alert!';
+        } else {
+          virtualCat.textContent = '🐱💤';
+          virtualCat.className = 'cat-avatar cat-sleeping';
+          oledStatusText.textContent = 'Status: sleeping...';
+        }
+      }
+    }
 
-    // Buzzer Control
-    btnBuzzer1.addEventListener('click', async () => {
-      await sendCommand('5');
-    });
+    btnUnlockHold.addEventListener('mousedown', startHold);
+    btnUnlockHold.addEventListener('mouseup', cancelHold);
+    btnUnlockHold.addEventListener('mouseleave', cancelHold);
 
-    btnBuzzer2.addEventListener('click', async () => {
-      await sendCommand('6');
+    btnUnlockHold.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      startHold();
     });
-
-    // OLED Image Control
-    btnOledImg.addEventListener('click', async () => {
-      await sendCommand('9');
-      snoopyPreview.classList.add('active');
-      snoopyText.textContent = 'OLED 상태: 스누피 출력 완료!';
-      logToTerminal('OLED에 Snoopy 이미지를 로드했습니다.', 'system');
+    btnUnlockHold.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      cancelHold();
     });
 
   </script>

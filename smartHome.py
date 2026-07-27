@@ -1,264 +1,245 @@
 from machine import ADC, Pin, PWM, SoftI2C
-from time import sleep
-from servo import Servo
-
-import dht
+import time
+import network
+import ntptime
+from neopixel import NeoPixel
 from lcd_api import LcdApi
 from i2c_lcd import I2cLcd
 
 import ble_library
 import bluetooth
-
 import ssd1306
 import framebuf
 
-# 조도 센서 초기화 (LDR Pin 36)
-cds = ADC(Pin(36))
-cds.atten(ADC.ATTN_11DB)
+# ==========================================
+# 1. Wi-Fi 및 시간 설정 (한국 시간)
+# ==========================================
+WIFI_SSID = "ICEE"
+WIFI_PASSWORD = "icee2026"
 
-cds_flag = 0
+def connect_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    if not wlan.isconnected():
+        print("WiFi 연결 중...")
+        wlan.connect(WIFI_SSID, WIFI_PASSWORD)
+        while not wlan.isconnected():
+            time.sleep(0.5)
+            print(".", end="")
+    print("\nWiFi 연결 완료!")
+    try:
+        ntptime.settime() # UTC 시간 동기화
+        print("시간 동기화 완료")
+    except Exception as e:
+        print("시간 동기화 실패:", e)
+        
+# ==========================================
+# 2. 하드웨어 핀 맵핑 초기화
+# ==========================================
+# 터치 센서
+touch1 = Pin(17, Pin.IN) # 무드등 스위치
+touch4 = Pin(19, Pin.IN) # 3초 길게 누르기 알람 해제
 
-# 서보 모터 초기화 (Servo Pin 13)
-motor = Servo(pin=13)
+# 네오픽셀 (12구)
+pin = Pin(14, Pin.OUT)
+np = NeoPixel(pin, 12) 
 
-# 피에조 부저 초기화 (PWM Pin 23, 기본 주파수 1000Hz 설정)
+# 피에조 부저
 piezo = PWM(Pin(23), freq=1000)
 piezo.duty_u16(0)
 
-# 부저 멜로디 정의
-blindMelody = (524, 659, 784)
-melody1 = (784, 784, 880, 880, 784, 784, 659)
-melody2 = (523, 523, 784, 784, 880, 880, 784)
-
-# RGB LED 핀 정의 (빨강 Pin 25, 초록 Pin 26, 파랑 Pin 27)
-R = Pin(25, Pin.OUT)
-G = Pin(26, Pin.OUT)
-B = Pin(27, Pin.OUT)
-
-# 정전식 터치 센서 4핀 정의
-# [기본값] 회로 연결 명세서(스마트홈_회로연결.txt) 기준: D33, D32, D35, D34
-touch1 = Pin(33, Pin.IN)
-touch2 = Pin(32, Pin.IN)
-touch3 = Pin(35, Pin.IN)
-touch4 = Pin(34, Pin.IN)
-
-# [선택] PRD_s.md 기준: D17, D5, D18, D19 (필요 시 아래 주석 해제 및 위 코드 주석 처리)
-# touch1 = Pin(17, Pin.IN)
-# touch2 = Pin(5, Pin.IN)
-# touch3 = Pin(18, Pin.IN)
-# touch4 = Pin(19, Pin.IN)
-
-# DHT11 온습도 센서 초기화 (Pin 14)
-d = dht.DHT11(Pin(14))
-
-# TV (I2C LCD 16x2) 초기화 (SDA Pin 21, SCL Pin 22)
+# I2C 통신 (LCD & OLED 공용)
 i2c = SoftI2C(sda=Pin(21), scl=Pin(22))
-lcd = I2cLcd(i2c, 0x27, 2, 16)
-lcd.clear()
+try:
+    lcd = I2cLcd(i2c, 0x27, 2, 16) # LCD
+    oled = ssd1306.SSD1306_I2C(128, 64, i2c) # OLED (ssd1306 prefix 추가)
+    print("디스플레이 초기화 완료")
+except Exception as e:
+    print("디스플레이 초기화 에러:", e)
 
-# LCD용 커스텀 특수문자 아이콘 정의 (온도계, 물방울)
-temp_icon = bytearray([0x04, 0x0A, 0x0A, 0x0E, 0x0E, 0x1F, 0x1F, 0x0E])
-humi_icon = bytearray([0x04, 0x04, 0x0A, 0x0A, 0x11, 0x1F, 0x1F, 0x0E])
-lcd.custom_char(0, temp_icon)
-lcd.custom_char(1, humi_icon)
+# ==========================================
+# 3. 변수 (상태 관리)
+# ==========================================
+target_alarm_mins = -1
+wake_mins = -1
+is_alarming = False
+is_sunrise_active = False
+mood_light_on = False
 
-# BLE 인스턴스 초기화 및 'ESP_dd' 장치명으로 페어링 시작 (웹 검색 필터인 'ESP_' 매칭)
+# 터치 제어용 변수
+touch1_last_state = 0
+touch4_press_start = 0
+touch4_pressing = False
+
+# 블루투스 초기화
 ble = bluetooth.BLE()
-p = ble_library.BLESimplePeripheral(ble, "ESP_dd")
+p = ble_library.BLESimplePeripheral(ble, "ESP_dd") # ble_library prefix 추가
 
-# OLED 디스플레이 초기화 (기존의 SoftI2C 'i2c' 버스 인스턴스 공유하여 충돌 방지)
-display2 = ssd1306.SSD1306_I2C(128, 64, i2c)
+# ==========================================
+# 4. 기능 함수들
+# ==========================================
+def get_kst_time():
+    # KST = UTC + 9시간 (32400초)
+    t = time.localtime(time.time() + 32400)
+    return t
 
-display2.fill(0)
-display2.show()
+def set_neopixel(r, g, b):
+    for i in range(12):
+        np[i] = (r, g, b)
+    np.write()
 
-# 블루투스 수신 이벤트 핸들러
-def on_rx(v): 
-    print(v)
-    # '1' 수신 시: TV(LCD)에 현재 온습도 표시 및 웹 브라우저로 블루투스 송신
-    if v == '1':
-        lcd.clear()
-        print("1")
-        try:
-            # 온습도 측정
-            d.measure()
-            temp = str(int(d.temperature()))
-            humi = str(int(d.humidity()))
-            lcd.clear()
-            
-            lcd.move_to(0, 0)
-            lcd.putchar(chr(0)) # 온도계 아이콘
-            lcd.putstr("temp : ")
-            lcd.putstr(temp)
-            lcd.putstr("C")
-            
-            lcd.move_to(0, 1)
-            lcd.putchar(chr(1)) # 물방울 아이콘
-            lcd.putstr("humi : ")
-            lcd.putstr(humi)
-            lcd.putstr("%")
-            
-            # 웹 브라우저 대시보드 화면 동기화를 위해 블루투스 송신 (p.send)
-            p.send("temp : " + temp + "\n")
-            p.send("humi : " + humi + "\n")
-        except Exception as e:
-            print("DHT11 sensor error:", e)
-            lcd.move_to(0, 0)
-            lcd.putstr("DHT11 Read Error")
-            p.send("temp : Err\n")
-            p.send("humi : Err\n")
+def calculate_smart_wakeup():
+    global target_alarm_mins, wake_mins
+    if target_alarm_mins < 0: return
+    
+    t = get_kst_time()
+    current_mins = t[3] * 60 + t[4]
+    
+    # 입면 시간(15분) 추가
+    sleep_start_mins = current_mins + 15
+    if target_alarm_mins < sleep_start_mins:
+        target_alarm_mins += 1440 # 다음 날로 계산
         
-    # '2' 수신 시: TV(LCD)에 조도 센서 측정값 표시 및 웹 브라우저로 블루투스 송신
-    if v == '2':
-        lcd.clear()
-        try:
-            cds_value = cds.read()
-            lcd.move_to(0, 0)
-            lcd.putstr(str(cds_value))
-            
-            if cds_value > 4000:   
-                lcd.move_to(0, 1)
-                lcd.putstr("It's dark")
-            else:
-                lcd.move_to(0, 1)
-                lcd.putstr("It's bright")
-                
-            # 웹 브라우저 대시보드 화면 동기화를 위해 조도 값 블루투스 송신 (p.send)
-            p.send(str(cds_value) + "\n")
-        except Exception as e:
-            print("CdS sensor error:", e)
-            lcd.move_to(0, 0)
-            lcd.putstr("CdS Read Error")
-            p.send("0\n")
-
-    # '3' 수신 시: LCD 백라이트 켜기
-    if v == '3':
-        lcd.backlight_on()
+    diff = target_alarm_mins - sleep_start_mins
+    cycles = diff // 90 # 90분 수면 주기 횟수
+    cycle_end_mins = sleep_start_mins + (cycles * 90)
+    
+    # 수면 주기가 타겟 시간 40분 이내에 끝난다면 앞당김
+    if target_alarm_mins - 40 <= cycle_end_mins <= target_alarm_mins:
+        wake_mins = cycle_end_mins % 1440
+    else:
+        wake_mins = target_alarm_mins % 1440
         
-    # '4' 수신 시: LCD 백라이트 끄기
-    if v == '4':
-        lcd.backlight_off()
+    wake_h = wake_mins // 60
+    wake_m = wake_mins % 60
     
-    # '5' 수신 시: 멜로디 1 (학교종) 부저 재생 (50% 듀티 사이클로 출력)
-    if v == '5':
-        piezo.duty_u16(32768)
-        for i in melody1:
-            piezo.freq(i)
-            sleep(0.5)
-        piezo.duty_u16(0) 
+    # 웹으로 계산 결과 전송
+    msg = "wake : {:02d}{:02d}\n".format(wake_h, wake_m)
+    p.send(msg)
+    
+    # LCD 업데이트
+    lcd.move_to(0, 1)
+    lcd.putstr("Wake: {:02d}:{:02d}    ".format(wake_h, wake_m))
+    
+    # OLED 수면 모드 전환
+    oled.fill(0)
+    oled.text("Zzz...", 40, 30)
+    oled.show()
 
-    # '6' 수신 시: 멜로디 2 (작은별) 부저 재생 (50% 듀티 사이클로 출력)
-    if v == '6':
-        piezo.duty_u16(32768)
-        for i in melody2:
-            piezo.freq(i)
-            sleep(0.5)
-        piezo.duty_u16(0) 
+def on_rx(data):
+    global target_alarm_mins, is_alarming, mood_light_on
+    msg = data.decode().strip()
     
-    # '7' 수신 시: RGB LED 전체 켜기
-    if v == '7':
-        R.on()
-        G.on()
-        B.on()        
-    
-    # '8' 수신 시: RGB LED 전체 끄기
-    if v == '8':
-        R.off()
-        G.off()
-        B.off()    
-    
-    # '9' 수신 시: OLED에 Snoopy PBM 단색 비트맵 이미지 드로잉 (예외 안전 처리)
-    if v == '9':
-        image_paths = ['img/snoppy.pbm', 'lib/kitty.pbm', 'snoppy.pbm', 'kitty.pbm']
-        image_loaded = False
-        for path in image_paths:
-            try:
-                with open(path, 'rb') as f:
-                    f.readline() # PBM 포맷 헤더 스킵
-                    f.readline() # 이미지 크기 헤더 스킵
-                    data = bytearray(f.read())
-                fb = framebuf.FrameBuffer(data, 128, 64, framebuf.MONO_HLSB)
-                display2.invert(0)
-                display2.fill(0)
-                display2.blit(fb, 0, 0)
-                display2.show()
-                p.send("OLED : Image Loaded\n")
-                image_loaded = True
-                break
-            except Exception:
-                continue
-        
-        if not image_loaded:
-            print("OLED Image file not found")
-            display2.fill(0)
-            display2.text("Snoopy image", 15, 20)
-            display2.text("not found!", 20, 35)
-            display2.show()
-            p.send("OLED : File Not Found\n")
+    if msg == '1': # 수면 시작
+        calculate_smart_wakeup()
+    elif msg == '2': # 무드등 수동 토글
+        mood_light_on = not mood_light_on
+        if mood_light_on: set_neopixel(100, 100, 80)
+        else: set_neopixel(0, 0, 0)
+    elif msg == '3': # 강제 알람 테스트
+        is_alarming = True
+    elif msg.startswith('T'): # 시간 설정 (예: T0700)
+        h = int(msg[1:3])
+        m = int(msg[3:5])
+        target_alarm_mins = h * 60 + m
+        lcd.move_to(0, 1)
+        lcd.putstr("Set: {:02d}:{:02d}    ".format(h, m))
 
-# 블루투스 수신 데이터 바인딩
 p.on_write(on_rx)
 
-# 터치 센서 이전 상태 저장용 변수
-last_t1 = 0
-last_t2 = 0
-last_t3 = 0
-last_t4 = 0
+# ==========================================
+# 5. 메인 루프 (Main Loop)
+# ==========================================
+connect_wifi()
+lcd.clear()
 
-# 메인 무한 루프
+last_time_update = 0
+
 while True:
-    # 조도 밝기 변화에 따른 모터 및 멜로디 동작
-    cds_value = cds.read()
+    current_time_ms = time.ticks_ms()
+    t = get_kst_time()
+    current_mins = t[3] * 60 + t[4]
     
-    if cds_value > 4000 and cds_flag == 1:
-        piezo.duty_u16(32768) # 50% 듀티 사이클로 변경
-        for i in blindMelody:
-            piezo.freq(i)
-            sleep(0.3)
-        piezo.duty_u16(0) 
-        motor.move(180)
-        cds_flag = 0       
-        
-    elif cds_value <= 4000 and cds_flag == 0:
-        motor.move(90)
-        cds_flag = 1 
-        
-    # 터치 센서 실시간 값 읽기
-    t1 = touch1.value()
-    t2 = touch2.value()
-    t3 = touch3.value()
-    t4 = touch4.value()
-    
-    # 터치 센서 접촉 감지 시점에만 단발적으로 LED 상태 변경 (엣지 트리거)
-    # 이를 통해 웹에서 보낸 BLE LED 제어 명령이 루프에 의해 계속 덮어쓰여지는 것을 방지합니다.
-    if t1 and not last_t1:
-        print("Button 1 touched")
-        R.on()
-        G.off()
-        B.off()
-        
-    elif t2 and not last_t2:
-        print("Button 2 touched")
-        R.on()
-        G.on()
-        B.off()
-    
-    elif t3 and not last_t3:
-        print("Button 3 touched")
-        R.on()
-        G.off()
-        B.on()
-        
-    elif t4 and not last_t4:
-        print("Button 4 touched")
-        R.off()
-        G.off()
-        B.off()
+    # --------------------------------------
+    # A. 화면 업데이트 (1초마다)
+    # --------------------------------------
+    if time.ticks_diff(current_time_ms, last_time_update) > 1000:
+        lcd.move_to(0, 0)
+        lcd.putstr("Time: {:02d}:{:02d}:{:02d}".format(t[3], t[4], t[5]))
+        last_time_update = current_time_ms
 
-    # 이전 상태 기록 업데이트
-    last_t1 = t1
-    last_t2 = t2
-    last_t3 = t3
-    last_t4 = t4
+    # --------------------------------------
+    # B. 일출 시뮬레이션 및 알람 로직
+    # --------------------------------------
+    if wake_mins >= 0 and not is_alarming:
+        diff_mins = wake_mins - current_mins
+        if diff_mins < 0: diff_mins += 1440
+        
+        if diff_mins == 30: # T-30: 보라/피치 파스텔톤
+            set_neopixel(10, 0, 10)
+        elif diff_mins == 15: # T-15: 코랄/옐로우
+            set_neopixel(50, 20, 0)
+        elif diff_mins == 0: # T-0: 정각 알람!
+            set_neopixel(255, 200, 150) # 웜화이트 최대 밝기
+            is_alarming = True
+            wake_mins = -1 # 알람 초기화
+            
+            oled.fill(0)
+            oled.text("WAKE UP!", 30, 20)
+            oled.show()
 
-    sleep(0.5)
+    # 부저 비프음 (알람 작동 중일 때)
+    if is_alarming:
+        if (current_time_ms // 500) % 2 == 0:
+            piezo.duty_u16(32768) # buzzer -> piezo로 통일 및 duty -> duty_u16(50% 볼륨)으로 수정
+            piezo.freq(1000)
+        else:
+            piezo.duty_u16(0)
+
+    # --------------------------------------
+    # C. 터치 센서 로직
+    # --------------------------------------
+    # 터치 1 (무드등 토글 - 디바운스 적용)
+    t1_val = touch1.value()
+    if t1_val == 1 and touch1_last_state == 0:
+        mood_light_on = not mood_light_on
+        if mood_light_on: set_neopixel(100, 100, 80)
+        else: set_neopixel(0, 0, 0)
+    touch1_last_state = t1_val
+
+    # 터치 4 (3초 길게 누르기 알람 해제)
+    if is_alarming:
+        if touch4.value() == 1:
+            if not touch4_pressing:
+                touch4_press_start = current_time_ms
+                touch4_pressing = True
+            
+            # 누르고 있는 시간 계산
+            elapsed = time.ticks_diff(current_time_ms, touch4_press_start)
+            
+            # OLED 로딩 바 애니메이션 업데이트
+            oled.fill_rect(10, 45, 108, 10, 0) # 이전 바 지우기
+            bar_width = int((elapsed / 3000) * 100)
+            if bar_width > 100: bar_width = 100
+            oled.rect(14, 45, 102, 8, 1) # 테두리
+            oled.fill_rect(15, 46, bar_width, 6, 1) # 채우기
+            oled.show()
+            
+            # 3초(3000ms) 도달 시 알람 종료!
+            if elapsed >= 3000:
+                is_alarming = False
+                touch4_pressing = False
+                piezo.duty_u16(0) # buzzer.duty(0) -> piezo.duty_u16(0)으로 수정
+                
+                oled.fill(0)
+                oled.text("Good Morning!", 15, 30)
+                oled.show()
+                # 조명은 무드등 상태로 계속 유지됨 (PRD 요구사항)
+        else:
+            if touch4_pressing:
+                # 손을 중간에 떼면 초기화
+                touch4_pressing = False
+                oled.fill_rect(10, 45, 108, 10, 0)
+                oled.show()
+    
+    time.sleep_ms(10) # CPU 부하 감소를 위한 짧은 대기 추가
